@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus | Enterprise Dashboard</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Chart.js plugin for curved lines -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-style@latest/dist/chartjs-plugin-style.min.js"></script>
+  <!-- Chart.js plugin for center text in doughnut -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-doughnutlabel@2.0.3/dist/chartjs-plugin-doughnutlabel.min.js"></script>
+  
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-light: #7b9fff;
+      --primary-dark: #3a56d4;
+      --secondary: #38bdf8;
+      --accent: #f472b6;
+      --dark: #111827;
+      --dark-gray: #1F2937;
+      --gray: #6B7280;
+      --light-gray: #E5E7EB;
+      --lighter-gray: #F3F4F6;
+      --white: #FFFFFF;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      
+      /* Add custom widget styles */
+      --widget-button-size: 56px;
+      
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+      
+      --border-radius: 4px;
+      --transition: all 0.2s ease;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #fafafa;
+      color: var(--dark);
+      line-height: 1.5;
+      overflow-x: hidden;
+      font-weight: 400;
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    h1, h2, h3, h4, h5 {
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    
+    .sidebar {
+      width: 240px;
+      background-color: var(--white);
+      border-right: 1px solid var(--light-gray);
+      padding: 1.5rem 0;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sidebar-top {
+      flex: 1;
+    }
+    
+    .sidebar-bottom {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--light-gray);
+    }
+    
+    .logo-container {
+      padding: 0 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+    
+    .logo-icon {
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .logo-text {
+      font-weight: 600;
+      font-size: 1.2rem;
+      color: var(--dark);
+      letter-spacing: -0.02em;
+    }
+    
+    .nav-section {
+      margin-bottom: 1.5rem;
+    }
+    
+    .nav-section-title {
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--gray);
+      padding: 0 1.5rem;
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+    
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 0.65rem 1.5rem;
+      color: var(--dark-gray);
+      text-decoration: none;
+      transition: var(--transition);
+      position: relative;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    
+    .nav-item:hover {
+      background-color: var(--lighter-gray);
+      color: var(--primary);
+    }
+    
+    .nav-item.active {
+      color: var(--primary);
+      font-weight: 500;
+    }
+    
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 2px;
+      background: var(--primary);
+    }
+    
+    .nav-icon {
+      margin-right: 0.75rem;
+      font-size: 0.9rem;
+      width: 18px;
+      text-align: center;
+      opacity: 0.8;
+    }
+    
+    .main-content {
+      flex: 1;
+      margin-left: 240px;
+      padding: 2rem;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--dark);
+      letter-spacing: -0.02em;
+    }
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .search-bar {
+      position: relative;
+    }
+    
+    .search-input {
+      padding: 0.5rem 1rem 0.5rem 2.25rem;
+      border: 1px solid var(--light-gray);
+      border-radius: var(--border-radius);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      width: 240px;
+      transition: var(--transition);
+      background-color: var(--white);
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(93, 95, 239, 0.1);
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray);
+      font-size: 0.875rem;
+    }
+    
+    .setup-button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .setup-button:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+    }
+    
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+      flex-shrink: 0;
+      margin-right: 0.75rem;
+    }
+    
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .user-name {
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+    
+    .user-role {
+      font-size: 0.75rem;
+      color: var(--gray);
+    }
+    
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1rem;
+    }
+    
+    .card {
+      background-color: var(--white);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-sm);
+      padding: 1.25rem;
+      transition: var(--transition);
+      border: 1px solid var(--light-gray);
+    }
+    
+    .card:hover {
+      box-shadow: var(--shadow-md);
+    }
+    
+    .card-sm {
+      grid-column: span 4;
+    }
+    
+    .card-md {
+      grid-column: span 6;
+    }
+    
+    .card-lg {
+      grid-column: span 8;
+    }
+    
+    .card-full {
+      grid-column: span 12;
+    }
+    
+    .stat-card {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .stat-title {
+      font-size: 0.875rem;
+      color: var(--gray);
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    
+    .stat-change {
+      display: flex;
+      align-items: center;
+      font-size: 0.8125rem;
+    }
+    
+    .stat-change.positive {
+      color: var(--success);
+    }
+    
+    .stat-change.negative {
+      color: var(--danger);
+    }
+    
+    .stat-icon {
+      margin-right: 0.25rem;
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+    
+    .card-title {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .card-action {
+      background: none;
+      border: none;
+      color: var(--gray);
+      cursor: pointer;
+      transition: var(--transition);
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--border-radius);
+    }
+    
+    .card-action:hover {
+      background-color: var(--lighter-gray);
+      color: var(--dark);
+    }
+    
+    .chart-container {
+      width: 100%;
+      height: 250px;
+      position: relative;
+    }
+    
+    .chart-info {
+      display: flex;
+      flex-direction: column;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--light-gray);
+    }
+    
+    .chart-trend {
+      display: flex;
+      align-items: center;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--success);
+      margin-bottom: 0.25rem;
+    }
+    
+    .chart-trend i {
+      margin-right: 0.25rem;
+    }
+    
+    .chart-period {
+      font-size: 0.75rem;
+      color: var(--gray);
+    }
+    
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-weight: 500;
+      color: var(--gray);
+      border-bottom: 1px solid var(--light-gray);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--light-gray);
+      font-size: 0.875rem;
+    }
+    
+    tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .status {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.625rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .status.active {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+    }
+    
+    .status.pending {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+    }
+    
+    .status.inactive {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+    }
+    
+    .progress-container {
+      width: 100%;
+      height: 6px;
+      background-color: var(--light-gray);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      border-radius: 3px;
+    }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.125rem 0.5rem;
+      border-radius: var(--border-radius);
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .badge-primary {
+      background-color: rgba(93, 95, 239, 0.1);
+      color: var(--primary);
+    }
+    
+    .badge-secondary {
+      background-color: rgba(56, 189, 248, 0.1);
+      color: var(--secondary);
+    }
+    
+    .badge-accent {
+      background-color: rgba(244, 114, 182, 0.1);
+      color: var(--accent);
+    }
+    
+    .badge-success {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+    }
+    
+    .badge-warning {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+    }
+    
+    .badge-danger {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+    }
+    
+    .banner {
+      grid-column: span 12;
+      background: linear-gradient(to right, #4361ee, #38bdf8);
+      color: white;
+      border-radius: var(--border-radius);
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .banner-content {
+      display: flex;
+      align-items: center;
+    }
+    
+    .banner-icon {
+      margin-right: 0.75rem;
+      font-size: 1rem;
+    }
+    
+    .banner-text {
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    
+    .banner-action {
+      background-color: rgba(255, 255, 255, 0.15);
+      color: white;
+      border: none;
+      padding: 0.375rem 0.75rem;
+      border-radius: var(--border-radius);
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .banner-action:hover {
+      background-color: rgba(255, 255, 255, 0.25);
+    }
+    
+    .user-activity-card {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .user-activity-card:last-child {
+      border-bottom: none;
+    }
+    
+    .user-avatar-sm {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+      flex-shrink: 0;
+      margin-right: 0.75rem;
+    }
+    
+    .user-activity-content {
+      flex: 1;
+    }
+    
+    .user-activity-name {
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+    
+    .user-activity-action {
+      font-size: 0.75rem;
+      color: var(--gray);
+    }
+    
+    .user-activity-time {
+      font-size: 0.75rem;
+      color: var(--gray);
+      flex-shrink: 0;
+    }
+    
+    .user-metrics {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    
+    .user-metric {
+      text-align: center;
+    }
+    
+    .user-metric-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    
+    .user-metric-label {
+      font-size: 0.75rem;
+      color: var(--gray);
+    }
+    
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .card-sm {
+        grid-column: span 4;
+      }
+      
+      .card-md {
+        grid-column: span 6;
+      }
+      
+      .card-lg {
+        grid-column: span 12;
+      }
+    }
+    
+    @media (max-width: 992px) {
+      .card-sm {
+        grid-column: span 6;
+      }
+      
+      .card-md {
+        grid-column: span 12;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .card-sm {
+        grid-column: span 12;
+      }
+    }
+    
+    /* Modal Styles for Widget Settings - Added from Thena file */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1001;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(5px);
+    }
+    
+    .modal-content {
+      background-color: white;
+      margin: 50px auto;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.15);
+      max-width: 500px;
+      width: 90%;
+      position: relative;
+    }
+    
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      color: var(--gray);
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .close-modal:hover {
+      color: var(--primary);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: var(--dark);
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--light-gray);
+      border-radius: var(--border-radius);
+      font-family: inherit;
+      font-size: 16px;
+      transition: var(--transition);
+    }
+    
+    .form-group input:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
+    }
+    
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 30px;
+    }
+    
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--dark);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 4px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      z-index: 1002;
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+    }
+    
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, -10px);
+    }
+    
+    /* Widget button styles */
+    #thena-settings-button {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      width: var(--widget-button-size);
+      height: var(--widget-button-size);
+      border-radius: 5%;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(67, 97, 238, 0.25);
+      z-index: 999;
+      font-size: 24px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    #thena-settings-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(67, 97, 238, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="logo-container">
+        <a href="#" class="logo">
+          <div class="logo-icon">N</div>
+          <span class="logo-text">Nexus</span>
+        </a>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-section-title">Overview</div>
+        <a href="#" class="nav-item active">
+          <i class="nav-icon fas fa-th-large"></i>
+          Dashboard
+        </a>
+        <a href="#" class="nav-item">
+          <i class="nav-icon fas fa-chart-line"></i>
+          Analytics
+        </a>
+        <a href="#" class="nav-item">
+          <i class="nav-icon fas fa-bolt"></i>
+          Activity
+        </a>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-section-title">Workspace</div>
+        <a href="#" class="nav-item">
+          <i class="nav-icon fas fa-code-branch"></i>
+          Projects
+        </a>
+        <a href="#" class="nav-item">
+          <i class="nav-icon fas fa-tasks"></i>
+          Issues
+        </a>
+        <a href="#" class="nav-item">
+          <i class="nav-icon fas fa-users"></i>
+          Team
+        </a>
+        <a href="#" class="nav-item">
+          <i class="nav-icon fas fa-database"></i>
+          Resources
+        </a>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-section-title">Account</div>
+        <a href="#" class="nav-item">
+          <i class="nav-icon fas fa-cog"></i>
+          Settings
+        </a>
+        <a href="#" class="nav-item">
+          <i class="nav-icon fas fa-question-circle"></i>
+          Help
+        </a>
+      </div>
+    </div>
+    
+    <div class="sidebar-bottom">
+      <div class="user-menu">
+        <div class="user-avatar" style="background-image: url('https://randomuser.me/api/portraits/men/32.jpg'); background-size: cover;"></div>
+        <div class="user-info">
+          <div class="user-name">Alex Rivera</div>
+          <div class="user-role">Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="header">
+      <h1 class="page-title">Dashboard</h1>
+      
+      <div class="header-actions">
+        <div class="search-bar">
+          <i class="search-icon fas fa-search"></i>
+          <input type="text" class="search-input" placeholder="Search...">
+        </div>
+        
+        <button class="setup-button" id="widget-settings-btn">
+          <i class="fas fa-comment-dots"></i>
+          Setup chat widget
+        </button>
+      </div>
+    </header>
+    
+    <div class="dashboard-grid">
+      <!-- Banner -->
+      <div class="banner">
+        <div class="banner-content">
+          <i class="banner-icon fas fa-bolt"></i>
+          <div class="banner-text">New dashboard features are now available — check out the latest improvements</div>
+        </div>
+        <button class="banner-action">Explore</button>
+      </div>
+      
+      <!-- Stat Cards -->
+      <div class="card card-sm stat-card">
+        <div class="stat-title">Total deployments</div>
+        <div class="stat-value">1,284</div>
+        <div class="stat-change positive">
+          <i class="stat-icon fas fa-arrow-up"></i>
+          12.5% from last month
+        </div>
+      </div>
+      
+      <div class="card card-sm stat-card">
+        <div class="stat-title">Success rate</div>
+        <div class="stat-value">98.7%</div>
+        <div class="stat-change positive">
+          <i class="stat-icon fas fa-arrow-up"></i>
+          1.2% from last month
+        </div>
+      </div>
+      
+      <div class="card card-sm stat-card">
+        <div class="stat-title">Avg. response time</div>
+        <div class="stat-value">42ms</div>
+        <div class="stat-change positive">
+          <i class="stat-icon fas fa-arrow-down"></i>
+          8ms from last month
+        </div>
+      </div>
+      
+      <!-- Area Chart -->
+      <div class="card card-lg">
+        <div class="card-header">
+          <h3 class="card-title">System performance</h3>
+          <div class="card-actions">
+            <button class="card-action"><i class="fas fa-ellipsis-v"></i></button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="performanceChart"></canvas>
+        </div>
+        <div class="chart-info">
+          <div class="chart-trend">
+            <i class="fas fa-arrow-up"></i> Trending up by 5.2% this month
+          </div>
+          <div class="chart-period">January - June 2025</div>
+        </div>
+      </div>
+      
+      <!-- Donut Chart -->
+      <div class="card card-sm">
+        <div class="card-header">
+          <h3 class="card-title">Resource usage</h3>
+          <div class="card-actions">
+            <button class="card-action"><i class="fas fa-ellipsis-v"></i></button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="resourceUsageChart"></canvas>
+        </div>
+        <div class="chart-info">
+          <div class="chart-trend">
+            <i class="fas fa-arrow-up"></i> Trending up by 5.2% this month
+          </div>
+          <div class="chart-period">January - June 2025</div>
+        </div>
+      </div>
+      
+      <!-- Bar Chart -->
+      <div class="card card-md">
+        <div class="card-header">
+          <h3 class="card-title">API requests by endpoint</h3>
+          <div class="card-actions">
+            <button class="card-action"><i class="fas fa-ellipsis-v"></i></button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="apiRequestsChart"></canvas>
+        </div>
+        <div class="chart-info">
+          <div class="chart-trend">
+            <i class="fas fa-arrow-up"></i> Trending up by 5.2% this month
+          </div>
+          <div class="chart-period">Showing total requests for the last 6 months</div>
+        </div>
+      </div>
+      
+      <!-- User Activity Card -->
+      <div class="card card-md">
+        <div class="card-header">
+          <h3 class="card-title">User activity</h3>
+          <div class="card-actions">
+            <button class="card-action"><i class="fas fa-ellipsis-v"></i></button>
+          </div>
+        </div>
+        
+        <div class="user-metrics">
+          <div class="user-metric">
+            <div class="user-metric-value">847</div>
+            <div class="user-metric-label">Active users</div>
+          </div>
+          <div class="user-metric">
+            <div class="user-metric-value">+12.4%</div>
+            <div class="user-metric-label">Growth</div>
+          </div>
+          <div class="user-metric">
+            <div class="user-metric-value">24.8m</div>
+            <div class="user-metric-label">Session time</div>
+          </div>
+        </div>
+        
+        <div class="user-activity-card">
+          <div class="user-avatar-sm" style="background-image: url('https://randomuser.me/api/portraits/women/32.jpg');"></div>
+          <div class="user-activity-content">
+            <div class="user-activity-name">Jamie Chen</div>
+            <div class="user-activity-action">Deployed API Gateway to production</div>
+          </div>
+          <div class="user-activity-time">10m ago</div>
+        </div>
+        
+        <div class="user-activity-card">
+          <div class="user-avatar-sm" style="background-image: url('https://randomuser.me/api/portraits/men/45.jpg');"></div>
+          <div class="user-activity-content">
+            <div class="user-activity-name">Taylor Kim</div>
+            <div class="user-activity-action">Updated Auth Service configuration</div>
+          </div>
+          <div class="user-activity-time">32m ago</div>
+        </div>
+        
+        <div class="user-activity-card">
+          <div class="user-avatar-sm" style="background-image: url('https://randomuser.me/api/portraits/women/68.jpg');"></div>
+          <div class="user-activity-content">
+            <div class="user-activity-name">Morgan Smith</div>
+            <div class="user-activity-action">Created new project: Frontend App</div>
+          </div>
+          <div class="user-activity-time">1h ago</div>
+        </div>
+        
+        <div class="user-activity-card">
+          <div class="user-avatar-sm" style="background-image: url('https://randomuser.me/api/portraits/men/22.jpg');"></div>
+          <div class="user-activity-content">
+            <div class="user-activity-name">Casey Jones</div>
+            <div class="user-activity-action">Started database migration on staging</div>
+          </div>
+          <div class="user-activity-time">2h ago</div>
+        </div>
+      </div>
+      
+      <!-- Recent Deployments Table -->
+      <div class="card card-full">
+        <div class="card-header">
+          <h3 class="card-title">Recent deployments</h3>
+          <div class="card-actions">
+            <button class="card-action"><i class="fas fa-ellipsis-v"></i></button>
+          </div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Project</th>
+                <th>Environment</th>
+                <th>Deployed by</th>
+                <th>Time</th>
+                <th>Duration</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>#NX-5842</td>
+                <td>API Gateway</td>
+                <td><span class="badge badge-primary">Production</span></td>
+                <td>Jamie Chen</td>
+                <td>Today, 10:23 AM</td>
+                <td>45s</td>
+                <td><span class="status active">Success</span></td>
+              </tr>
+              <tr>
+                <td>#NX-5841</td>
+                <td>Auth Service</td>
+                <td><span class="badge badge-secondary">Staging</span></td>
+                <td>Taylor Kim</td>
+                <td>Today, 9:45 AM</td>
+                <td>1m 12s</td>
+                <td><span class="status active">Success</span></td>
+              </tr>
+              <tr>
+                <td>#NX-5840</td>
+                <td>Frontend App</td>
+                <td><span class="badge badge-primary">Production</span></td>
+                <td>Morgan Smith</td>
+                <td>Today, 9:12 AM</td>
+                <td>2m 08s</td>
+                <td><span class="status pending">In Progress</span></td>
+              </tr>
+              <tr>
+                <td>#NX-5839</td>
+                <td>Database Migration</td>
+                <td><span class="badge badge-secondary">Staging</span></td>
+                <td>Casey Jones</td>
+                <td>Yesterday, 4:30 PM</td>
+                <td>3m 47s</td>
+                <td><span class="status active">Success</span></td>
+              </tr>
+              <tr>
+                <td>#NX-5838</td>
+                <td>Analytics Service</td>
+                <td><span class="badge badge-primary">Production</span></td>
+                <td>Riley Wilson</td>
+                <td>Yesterday, 3:15 PM</td>
+                <td>1m 23s</td>
+                <td><span class="status inactive">Failed</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Widget Settings Modal - Added from Thena file -->
+  <div id="widget-settings-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Widget Settings</h3>
+      <form id="widget-settings-form">
+        <div class="form-group">
+          <label for="agent-id">Agent ID</label>
+          <input type="text" id="agent-id" placeholder="Enter agent ID" required>
+        </div>
+        <div class="form-group">
+          <label for="api-key">API Key</label>
+          <input type="text" id="api-key" placeholder="Enter API key" required>
+        </div>
+        <div class="form-group">
+          <label for="base-url">Base URL</label>
+          <input type="text" id="base-url" placeholder="Enter base URL" value="https://thena-agent-studio.thena.tools" required>
+        </div>
+        <div class="form-group">
+          <label for="ws-endpoint">WebSocket Endpoint</label>
+          <input type="text" id="ws-endpoint" placeholder="Enter WebSocket endpoint" value="wss://thena-agent-studio.thena.tools" required>
+        </div>
+        <div class="form-group">
+          <label for="user-email">User Email</label>
+          <input type="email" id="user-email" placeholder="Enter user email">
+        </div>
+        <div class="form-group">
+          <label for="user-name">User Name</label>
+          <input type="text" id="user-name" placeholder="Enter user name">
+        </div>
+        <div class="form-group">
+          <label for="hmac-secret">HMAC Secret (for authentication)</label>
+          <input type="text" id="hmac-secret" placeholder="Enter HMAC secret">
+        </div>
+        <div class="modal-buttons">
+          <button type="submit" class="setup-button">Save Settings</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Thena Web Chat Widget Container -->
+  <div id="thena-widget-container"></div>
+  
+  <script>
+    // Initialize charts when the DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      Chart.defaults.font.family = "'Inter', sans-serif";
+      Chart.defaults.color = "#6B7280";
+      Chart.defaults.scale.grid.drawBorder = false;
+      
+      // Performance Chart - Area Chart
+      const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+      const performanceChart = new Chart(performanceCtx, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+          datasets: [
+            {
+              label: 'Response time',
+              data: [68, 53, 78, 45, 63, 55],
+              borderColor: '#4361ee',
+              backgroundColor: (context) => {
+                const gradient = context.chart.ctx.createLinearGradient(0, 0, 0, context.chart.height);
+                gradient.addColorStop(0, 'rgba(67, 97, 238, 0.3)');
+                gradient.addColorStop(1, 'rgba(67, 97, 238, 0)');
+                return gradient;
+              },
+              tension: 0.4,
+              fill: true,
+              borderWidth: 2,
+              pointRadius: 0,
+              pointHoverRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'nearest',
+            intersect: false,
+            axis: 'x'
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(17, 24, 39, 0.8)',
+              padding: 12,
+              titleFont: {
+                size: 13
+              },
+              bodyFont: {
+                size: 12
+              },
+              cornerRadius: 4,
+              displayColors: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(0, 0, 0, 0.03)',
+                drawBorder: false
+              },
+              ticks: {
+                padding: 10,
+                display: false
+              },
+              border: {
+                display: false
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                padding: 10
+              },
+              border: {
+                display: false
+              }
+            }
+          },
+          elements: {
+            line: {
+              borderJoinStyle: 'round'
+            }
+          }
+        }
+      });
+      
+      // Resource Usage Chart - Donut with center text
+      const resourceUsageCtx = document.getElementById('resourceUsageChart').getContext('2d');
+      const resourceUsageChart = new Chart(resourceUsageCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Compute', 'Database', 'Storage', 'Network'],
+          datasets: [{
+            data: [1125, 634, 580, 720],
+            backgroundColor: [
+              '#4361ee',
+              '#7b9fff',
+              '#a3c4f3',
+              '#cfddff'
+            ],
+            borderWidth: 0,
+            hoverOffset: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '75%',
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(17, 24, 39, 0.8)',
+              padding: 12,
+              titleFont: {
+                size: 13
+              },
+              bodyFont: {
+                size: 12
+              },
+              cornerRadius: 4,
+              displayColors: false
+            }
+          },
+          elements: {
+            arc: {
+              borderWidth: 0
+            }
+          }
+        },
+        plugins: [{
+          id: 'centerText',
+          beforeDraw: function(chart) {
+            const width = chart.width;
+            const height = chart.height;
+            const ctx = chart.ctx;
+            
+            ctx.restore();
+            
+            // Value text
+            const fontSize = (height / 200).toFixed(2) * 24;
+            ctx.font = `600 ${fontSize}px Inter`;
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#111827';
+            
+            const text = '3,059';
+            const textX = width / 2;
+            const textY = height / 2 - fontSize / 4;
+            ctx.textAlign = 'center';
+            ctx.fillText(text, textX, textY);
+            
+            // Label text
+            const labelFontSize = (height / 200).toFixed(2) * 10;
+            ctx.font = `400 ${labelFontSize}px Inter`;
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#6B7280';
+            
+            const labelText = 'Total resources';
+            const labelTextX = width / 2;
+            const labelTextY = height / 2 + fontSize / 2;
+            ctx.textAlign = 'center';
+            ctx.fillText(labelText, labelTextX, labelTextY);
+            
+            ctx.save();
+          }
+        }]
+      });
+      
+      // API Requests Chart - Bar Chart
+      const apiRequestsCtx = document.getElementById('apiRequestsChart').getContext('2d');
+      const apiRequestsChart = new Chart(apiRequestsCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+          datasets: [
+            {
+              label: 'API calls',
+              data: [120, 90, 150, 85, 130, 110],
+              backgroundColor: '#4361ee',
+              borderRadius: 4,
+              borderSkipped: false,
+              barPercentage: 0.5,
+              categoryPercentage: 0.7
+            },
+            {
+              label: 'Data transfers',
+              data: [70, 120, 90, 60, 110, 80],
+              backgroundColor: '#a3c4f3',
+              borderRadius: 4,
+              borderSkipped: false,
+              barPercentage: 0.5,
+              categoryPercentage: 0.7
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(17, 24, 39, 0.8)',
+              padding: 12,
+              titleFont: {
+                size: 13
+              },
+              bodyFont: {
+                size: 12
+              },
+              cornerRadius: 4,
+              displayColors: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(0, 0, 0, 0.03)',
+                drawBorder: false
+              },
+              ticks: {
+                padding: 10,
+                display: false
+              },
+              border: {
+                display: false
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                padding: 10
+              },
+              border: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    });
+  </script>
+  
+  <!-- Widget Settings Script - Added from Thena file -->
+  <script>
+    // Define widget configuration as a global variable so it persists across reloads
+    window.thenaWidget = {
+      // No default values - will be set by user through settings
+    };
+    
+    // Function to save widget settings to localStorage to persist across page reloads
+    function saveWidgetSettings() {
+      localStorage.setItem('thenaWidgetSettings', JSON.stringify(window.thenaWidget));
+    }
+    
+    // Function to load widget settings from localStorage
+    function loadWidgetSettings() {
+      const savedSettings = localStorage.getItem('thenaWidgetSettings');
+      if (savedSettings) {
+        try {
+          const settings = JSON.parse(savedSettings);
+          window.thenaWidget = settings;
+          console.log('Loaded saved widget settings:', settings);
+        } catch (e) {
+          console.error('Error loading saved widget settings:', e);
+        }
+      }
+    }
+    
+    // Load settings on page load
+    loadWidgetSettings();
+    
+    // Show toast notification
+    function showToast(message) {
+      let toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      // Trigger reflow to enable transition
+      void toast.offsetWidth;
+      toast.classList.add('show');
+      
+      setTimeout(function() {
+        toast.classList.remove('show');
+        setTimeout(function() {
+          document.body.removeChild(toast);
+        }, 300);
+      }, 3000);
+    }
+    
+    // Generate HMAC-SHA256 using Web Crypto API
+    async function generateHMAC(secret, message) {
+      const encoder = new TextEncoder();
+      const secretBuffer = encoder.encode(secret);
+      const messageBuffer = encoder.encode(message);
+      
+      // Import the secret key
+      const key = await window.crypto.subtle.importKey(
+        'raw',
+        secretBuffer,
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      );
+      
+      // Sign the message
+      const signature = await window.crypto.subtle.sign(
+        'HMAC',
+        key,
+        messageBuffer
+      );
+      
+      // Convert to hex string
+      return Array.from(new Uint8Array(signature))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize Thena only if settings have been configured
+      if (window.thena) {
+        console.log("Thena widget initialized");
+      }
+      
+      // Widget Settings Modal functionality
+      const modal = document.getElementById('widget-settings-modal');
+      const settingsBtn = document.getElementById('widget-settings-btn');
+      const closeModal = document.querySelector('.close-modal');
+      const form = document.getElementById('widget-settings-form');
+      
+      // Pre-fill form fields with current settings if they exist
+      if (window.thenaWidget) {
+        document.getElementById('agent-id').value = window.thenaWidget.agentId || '';
+        document.getElementById('api-key').value = window.thenaWidget.apiKey || '';
+        document.getElementById('base-url').value = window.thenaWidget.baseUrl || '';
+        document.getElementById('ws-endpoint').value = window.thenaWidget.wsEndpoint || '';
+        
+        if (window.thenaWidget.user) {
+          document.getElementById('user-email').value = window.thenaWidget.user.email || '';
+          document.getElementById('user-name').value = window.thenaWidget.user.name || '';
+        }
+      }
+      
+      // Open modal when settings button is clicked
+      settingsBtn.addEventListener('click', function() {
+        modal.style.display = 'block';
+      });
+      
+      // Close modal when X is clicked
+      closeModal.addEventListener('click', function() {
+        modal.style.display = 'none';
+      });
+      
+      // Close modal when clicking outside
+      window.addEventListener('click', function(event) {
+        if (event.target == modal) {
+          modal.style.display = 'none';
+        }
+      });
+      
+      // Auto-open settings modal if no settings configured
+      if (!window.thenaWidget.agentId || !window.thenaWidget.apiKey) {
+        setTimeout(() => {
+          modal.style.display = 'block';
+          showToast("Please configure the widget settings to continue");
+        }, 500);
+      }
+      
+      // Handle form submission
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Get form values
+        const agentId = document.getElementById('agent-id').value.trim();
+        const apiKey = document.getElementById('api-key').value.trim();
+        const baseUrl = document.getElementById('base-url').value.trim();
+        const wsEndpoint = document.getElementById('ws-endpoint').value.trim();
+        const userEmail = document.getElementById('user-email').value.trim();
+        const userName = document.getElementById('user-name').value.trim();
+        const hmacSecret = document.getElementById('hmac-secret').value.trim();
+        
+        // Update thenaWidget configuration
+        window.thenaWidget.agentId = agentId;
+        window.thenaWidget.apiKey = apiKey;
+        window.thenaWidget.baseUrl = baseUrl;
+        window.thenaWidget.wsEndpoint = wsEndpoint;
+        
+        // If user authentication is provided
+        if (userEmail && userName && hmacSecret) {
+          // Create message payload for HMAC (email:name)
+          const messagePayload = `${userEmail}:${userName}`;
+          
+          try {
+            // Generate HMAC hash
+            const hash = await generateHMAC(hmacSecret, messagePayload);
+            
+            // Set user details with hash
+            window.thenaWidget.user = {
+              email: userEmail,
+              name: userName,
+              hash: hash
+            };
+            
+            console.log("User authenticated with HMAC hash:", hash);
+          } catch (error) {
+            console.error("Error generating HMAC:", error);
+            showToast("Error generating HMAC hash");
+            return;
+          }
+        } else if (userEmail || userName) {
+          // Set user details without hash (anonymous)
+          window.thenaWidget.user = {
+            email: userEmail,
+            name: userName
+          };
+        }
+        
+        // Close the modal
+        modal.style.display = 'none';
+        
+        // Save settings to localStorage
+        saveWidgetSettings();
+        
+        // Show toast
+        showToast("Settings saved! Reloading widget...");
+        
+        // The most reliable way to reset everything is to reload the page
+        // This ensures the widget is completely reinitialized with new settings
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      });
+    });
+  </script>
+  
+  <!-- Load the widget script conditionally -->
+  <script>
+    // Check if we have the required settings before loading the widget script
+    const hasValidSettings = window.thenaWidget && 
+                            window.thenaWidget.apiKey && 
+                            window.thenaWidget.agentId;
+    
+    // Only load the widget script if we have valid settings
+    if (hasValidSettings) {
+      const widgetScript = document.createElement('script');
+      widgetScript.src = 'https://widget.thena.tools/shim.js';
+      document.body.appendChild(widgetScript);
+    } else {
+      // If we don't have valid settings, show our custom widget button
+      console.log('No valid widget settings found. Showing configuration widget button.');
+      document.addEventListener('DOMContentLoaded', showConfigurationWidget);
+      // Also call it now in case DOM is already loaded
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        showConfigurationWidget();
+      }
+    }
+    
+    // Function to display our custom configuration widget button
+    function showConfigurationWidget() {
+      // Show the settings button
+      showSettingsButton();
+    }
+    
+    // Function to show floating settings button
+    function showSettingsButton() {
+      // Remove any existing button first
+      const existingBtn = document.getElementById('thena-settings-button');
+      if (existingBtn) existingBtn.remove();
+      
+      const btn = document.createElement('div');
+      btn.id = 'thena-settings-button';
+      btn.innerHTML = '<i class="fas fa-comment-dots"></i>';
+      document.body.appendChild(btn);
+      
+      btn.addEventListener('click', function() {
+        btn.style.display = 'none';
+        // Open settings modal
+        document.getElementById('widget-settings-modal').style.display = 'block';
+      });
+    }
+  </script>
+</body>
+</html>
